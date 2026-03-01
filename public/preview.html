@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agency â Digital Excellence</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050505;
+      --gold: #c9a96e;
+      --gold-light: #e8d5a3;
+      --gold-dark: #a07840;
+      --white: #ffffff;
+      --grey: #888888;
+      --card-bg: #0d0d0d;
+      --border: rgba(201,169,110,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ââ NAVBAR ââ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 4rem;
+      background: linear-gradient(to bottom, rgba(5,5,5,0.95), transparent);
+      backdrop-filter: blur(4px);
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ââ HERO ââ */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+    #three-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+    }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.3s;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.6s;
+    }
+    .hero-title span { color: var(--gold); font-style: italic; }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.55);
+      max-width: 520px;
+      line-height: 1.7;
+      margin: 0 auto 3rem;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.9s;
+    }
+    .hero-cta {
+      display: inline-flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 1.2s;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: #050505;
+      padding: 1rem 2.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+    .btn-outline {
+      border: 1px solid rgba(201,169,110,0.5);
+      color: var(--gold);
+      padding: 1rem 2.5rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .btn-outline:hover { border-color: var(--gold); background: rgba(201,169,110,0.08); }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards 2s;
+    }
+    .scroll-indicator span {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    /* ââ DIVIDER ââ */
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto 2rem;
+    }
+
+    /* ââ SECTION COMMON ââ */
+    section { padding: 8rem 4rem; }
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .section-title {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 300;
+      text-align: center;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+    .section-sub {
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      max-width: 580px;
+      margin: 0 auto 5rem;
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    /* ââ STATS BAR ââ */
+    #stats {
+      padding: 4rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+    .stat {
+      flex: 1;
+      max-width: 220px;
+      text-align: center;
+      padding: 1.5rem 2rem;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-size: 3rem;
+      font-weight: 200;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ââ SERVICES ââ */
+    #services { background: #070707; }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .service-card {
+      background: var(--card-bg);
+      padding: 3.5rem 3rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s ease;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover { transform: translateY(-4px); }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-num {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1.5rem;
+    }
+    .service-icon svg { width: 100%; height: 100%; }
+    .service-name {
+      font-size: 1.4rem;
+      font-weight: 300;
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .service-desc {
+      color: rgba(255,255,255,0.45);
+      line-height: 1.75;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .service-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      color: rgba(201,169,110,0.6);
+      padding: 0.3rem 0.7rem;
+    }
+
+    /* ââ CONTACT ââ */
+    #contact { background: var(--bg); }
+    .contact-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--white);
+      font-size: 1rem;
+      padding: 0.75rem 0;
+      outline: none;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--gold); }
+    .form-group select { appearance: none; cursor: pointer; }
+    .form-group select option { background: #111; }
+    .form-group textarea { resize: none; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-submit { margin-top: 1rem; text-align: center; }
+    .btn-submit {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 1.1rem 3rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.3s, color 0.3s;
+    }
+    .btn-submit:hover { background: var(--gold); color: #050505; }
+
+    /* ââ FOOTER ââ */
+    footer {
+      padding: 3rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-copy {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.1em;
+    }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    /* ââ ANIMATIONS ââ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50%       { opacity: 1;   transform: scaleY(1.15); }
+    }
+
+    /* ââ SCROLL REVEAL ââ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ââ RESPONSIVE ââ */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 2rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      #stats { flex-wrap: wrap; padding: 2rem 1.5rem; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">AGÃNCIA</div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="three-canvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Digital Excellence Since 2018</p>
+    <h1 class="hero-title">
+      We craft<br><span>digital futures</span><br>that endure
+    </h1>
+    <p class="hero-sub">
+      A luxury digital agency building immersive experiences, 
+      cutting-edge interfaces, and strategies that move brands forward.
+    </p>
+    <div class="hero-cta">
+      <a href="#services" class="btn-primary">Explore Services</a>
+      <a href="#contact" class="btn-outline">Start a Project</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stat">
+    <div class="stat-num">150+</div>
+    <div class="stat-label">Projects Delivered</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">98%</div>
+    <div class="stat-label">Client Satisfaction</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">7</div>
+    <div class="stat-label">Years of Excellence</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">40+</div>
+    <div class="stat-label">Global Brands</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <p class="section-label reveal">What We Do</p>
+  <h2 class="section-title reveal">Capabilities built<br>for the extraordinary</h2>
+  <p class="section-sub reveal">
+    We blend strategic thinking with flawless execution across digital design,
+    development, and brand experience.
+  </p>
+  <div class="services-grid">
+
+    <div class="service-card reveal">
+      <div class="service-num">01</div>
+      <div class="service-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="40" height="28" rx="2" stroke="#c9a96e" stroke-width="1.5"/>
+          <line x1="4" y1="36" x2="44" y2="36" stroke="#c9a96e" stroke-width="1.5"/>
+          <line x1="24" y1="36" x2="24" y2="44" stroke="#c9a96e" stroke-width="1.5"/>
+          <line x1="16" y1="44" x2="32" y2="44" stroke="#c9a96e" stroke-width="1.5"/>
+          <polyline points="12,26 18,18 24,22 30,14 36,20" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <h3 class="service-name">Digital Strategy</h3>
+      <p class="service-desc">
+        We map the terrain before we build. From market analysis to growth 
+        architecture, our strategic layer ensures every decision compounds.
+      </p>
+      <div class="service-tags">
+        <span class="tag">Brand Positioning</span>
+        <span class="tag">Growth Strategy</span>
+        <span class="tag">Analytics</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-num">02</div>
+      <div class="service-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="18" stroke="#c9a96e" stroke-width="1.5"/>
+          <path d="M16 24 C16 18 20 14 24 14 C28 14 32 18 32 24 C32 30 28 34 24 34 C20 34 16 30 16 24Z" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+          <line x1="6" y1="24" x2="42" y2="24" stroke="#c9a96e" stroke-width="1.5"/>
+          <path d="M24 6 C18 12 15 18 15 24 C15 30 18 36 24 42" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+          <path d="M24 6 C30 12 33 18 33 24 C33 30 30 36 24 42" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <h3 class="service-name">Web & Experience Design</h3>
+      <p class="service-desc">
+        Interfaces that feel inevitable. We design with intent â every pixel 
+        chosen, every interaction choreographed for maximum impact.
+      </p>
+      <div class="service-tags">
+        <span class="tag">UI/UX Design</span>
+        <span class="tag">Motion Design</span>
+        <span class="tag">Design Systems</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal">
+      <div class="service-num">03</div>
+      <div class="service-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="8,16 16,24 8,32" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+          <line x1="20" y1="32" x2="40" y2="32" stroke="#c9a96e" stroke-width="1.5"/>
+          <rect x="6" y="6" width="36" height="36" rx="3" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <h3 class="service-name">Development & Engineering</h3>
+      <p class="service-desc">
+        Production-grade code with performance obsession. We build systems 
+        that scale, survive real traffic, and evolve with your business.
+      </p>
+      <div class="service-tags">
+        <span class="tag">React / Next.js</span>
+        <span class="tag">Three.js / WebGL</span>
+        <span class="tag">Headless CMS</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label reveal">Let's Talk</p>
+  <h2 class="section-title reveal">Start your<br>next chapter</h2>
+  <p class="section-sub reveal">
+    Tell us about your project. We'll respond within 24 hours 
+    with a tailored proposal.
+  </p>
+  <div class="contact-inner">
+    <form class="contact-form reveal" onsubmit="handleSubmit(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" placeholder="Marco" required />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" placeholder="Rossi" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="marco@brand.com" required />
+      </div>
+      <div class="form-group">
+        <label>Project Type</label>
+        <select>
+          <option value="">Select a service</option>
+          <option>Digital Strategy</option>
+          <option>Web & Experience Design</option>
+          <option>Development & Engineering</option>
+          <option>Full Agency Partnership</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tell Us About Your Project</label>
+        <textarea placeholder="Describe your vision, goals, and timeline..."></textarea>
+      </div>
+      <div class="form-submit">
+        <button type="submit" class="btn-submit">Send Message</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">&copy; 2026 AgÃªncia. All rights reserved.</span>
+  <ul class="footer-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+  // ââ THREE.JS PARTICLE FIELD ââ
+  (function () {
+    const canvas = document.getElementById('three-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 80;
+
+    // 10,000 particles
+    const COUNT = 10000;
+    const positions = new Float32Array(COUNT * 3);
+    const colors = new Float32Array(COUNT * 3);
+    const sizes = new Float32Array(COUNT);
+
+    const goldColor = new THREE.Color('#c9a96e');
+    const whiteColor = new THREE.Color('#ffffff');
+
+    for (let i = 0; i < COUNT; i++) {
+      const i3 = i * 3;
+      // Spread in a large sphere
+      const r = 120 + Math.random() * 60;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      positions[i3]     = r * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = r * Math.cos(phi) - 60;
+
+      // Mix gold and white
+      const c = Math.random() < 0.35 ? goldColor : whiteColor;
+      colors[i3]     = c.r;
+      colors[i3 + 1] = c.g;
+      colors[i3 + 2] = c.b;
+
+      sizes[i] = 0.3 + Math.random() * 1.2;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.7,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.75,
+      sizeAttenuation: true,
+      depthWrite: false,
+    });
+
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    // Mouse parallax
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animate
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      points.rotation.y = t * 0.012 + mouseX * 0.06;
+      points.rotation.x = t * 0.007 + mouseY * 0.04;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+
+  // ââ SCROLL REVEAL ââ
+  (function () {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  })();
+
+  // ââ FORM SUBMIT ââ
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-submit');
+    btn.textContent = 'Message Sent â';
+    btn.style.background = 'var(--gold)';
+    btn.style.color = '#050505';
+    btn.disabled = true;
+  }
+
+  // ââ ANIMATED COUNTERS ââ
+  (function () {
+    const counters = document.querySelectorAll('.stat-num');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const raw = el.textContent;
+        const num = parseFloat(raw);
+        const suffix = raw.replace(String(num), '');
+        let start = 0;
+        const duration = 1800;
+        const step = 16;
+        const increment = num / (duration / step);
+        const interval = setInterval(() => {
+          start += increment;
+          if (start >= num) { start = num; clearInterval(interval); }
+          el.textContent = (Number.isInteger(num) ? Math.floor(start) : start.toFixed(0)) + suffix;
+        }, step);
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(el => observer.observe(el));
+  })();
+</script>
+</body>
+</html>
