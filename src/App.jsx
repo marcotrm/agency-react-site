@@ -11,17 +11,21 @@
  *   /services  â Services section standalone
  *   /about     â About section standalone
  *   /contact   â Contact section standalone
+ *
+ * Wrapped in ErrorBoundary so render errors show a recovery UI
+ * instead of a blank screen.
  */
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import Navbar from './components/Navbar.jsx';
-import Footer from './components/Footer.jsx';
-import Hero from './components/Hero.jsx';
-import Work from './components/Work.jsx';
-import Services from './components/Services.jsx';
-import About from './components/About.jsx';
-import Contact from './components/Contact.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
+import Navbar    from './components/Navbar.jsx';
+import Footer    from './components/Footer.jsx';
+import Hero      from './components/Hero.jsx';
+import Work      from './components/Work.jsx';
+import Services  from './components/Services.jsx';
+import About     from './components/About.jsx';
+import Contact   from './components/Contact.jsx';
 
 /** One-page home assembles all sections in sequence */
 const Home = () => (
@@ -36,18 +40,18 @@ const Home = () => (
 
 export default function App() {
   return (
-    <>
+    <ErrorBoundary>
       <Navbar />
       <main>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/work" element={<Work />} />
+          <Route path="/"         element={<Home />} />
+          <Route path="/work"     element={<Work />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/about"    element={<About />} />
+          <Route path="/contact"  element={<Contact />} />
         </Routes>
       </main>
       <Footer />
-    </>
+    </ErrorBoundary>
   );
 }
