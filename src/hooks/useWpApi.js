@@ -10,6 +10,10 @@
  *
  * In production, ensure the WP server has the following header:
  *   Access-Control-Allow-Origin: https://your-react-domain.com
+ *
+ * If WordPress is not yet connected the hook catches the error and sets
+ * data = [] so consuming components can render placeholder/static content
+ * instead of crashing.
  */
 import { useState, useEffect } from 'react';
 
@@ -25,27 +29,25 @@ const WP_BASE = import.meta.env.VITE_WP_API_BASE ?? '/wp-json/agency/v1';
 /**
  * @param {string}  endpoint  â API path segment, e.g. '/progetti'
  * @param {object}  [options] â fetch options (method, headers, etc.)
+ * @param {any[]}   [fallbackData=[]] â data to return when WP is unavailable
  * @returns {{ data: any[], loading: boolean, error: string|null }}
  */
-export function useWpApi(endpoint, options = {}) {
+export function useWpApi(endpoint, options = {}, fallbackData = []) {
   const [data,    setData]    = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
 
   useEffect(() => {
-    // Abort controller lets us cancel in-flight requests on unmount
     const controller = new AbortController();
+    const url = `${WP_BASE}${endpoint}`;
 
-    const fetchData = async () => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-
-        const url = `${WP_BASE}${endpoint}`;
         const res = await fetch(url, {
-          signal: controller.signal,
-          headers: { 'Accept': 'application/json', ...options.headers },
           ...options,
+          signal: controller.signal,
         });
 
         if (!res.ok) {
@@ -55,22 +57,22 @@ export function useWpApi(endpoint, options = {}) {
         const json = await res.json();
         setData(Array.isArray(json) ? json : [json]);
       } catch (err) {
-        // AbortError is expected on cleanup; don't surface it as an error
-        if (err.name !== 'AbortError') {
-          console.error(`[useWpApi] ${endpoint}`, err);
-          setError(err.message ?? 'Unknown error');
-        }
+        if (err.name === 'AbortError') return; // unmount â ignore
+        // Network error or WP not connected yet â use fallback silently
+        console.warn(`[useWpApi] ${endpoint} unavailable, using fallback data.`, err.message);
+        setData(fallbackData);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchData();
-
-    // Cleanup: cancel fetch if component unmounts before response arrives
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint]);
 
   return { data, loading, error };
 }
+
+export default useWpApi;
